@@ -1,31 +1,74 @@
+import React, { useState, useEffect } from 'react';
 import HandleForm from "../HandleForm";
 
 function DisplayTable(){
-    return (
-      <div>
-        <HandleForm />
-        <table>
-          <thead>
-            <tr>
-              <th>Catégories</th>
-              <th>Dépenses (€)</th>
-              <th>Total des dépenses mensuelles(€)</th>
-              <th>Détail des dépenses</th>
+
+  const [expenses, setExpenses] = useState([]);
+  const [categoryTotal, setCategoryTotal] = useState({});
+  const [totalExpenses, setTotalExpenses] = useState(0);
+
+  useEffect(() => {
+    const calculateTotalByCategory = () => {
+      const totals = {};
+      let total = 0;
+      expenses.forEach(expense => {
+        if (totals[expense.category]) {
+          totals[expense.category] += parseInt(expense.expenditure);
+        } else {
+          totals[expense.category] = parseInt(expense.expenditure);
+        }
+        total += parseInt(expense.expenditure);
+      });
+      setCategoryTotal(totals);
+      setTotalExpenses(total);
+    };
+
+    calculateTotalByCategory();
+  }, [expenses]);
+
+  const addExpense = (expense) => {
+    setExpenses([...expenses, expense]);
+  }
+
+  return (
+    <div>
+      <HandleForm addExpense={(expense) => addExpense({ ...expense, title: expense.nameExpenditure })} />
+      <table>
+        <thead>
+          <tr>
+            <th>Catégories</th>
+            <th>Titre</th>
+            <th>Dépenses (€)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {expenses.map((expense, index) => (
+            <tr key={index}>
+              <td>{expense.category}</td>
+              <td>{expense.name}</td>
+              <td>{expense.expenditure}</td>
             </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Alimentation</td>
-              <td>100</td>
-              <td>400</td>
-              <td>Achats divers</td>
-            </tr>
-            <tr>
-                <td></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    );
+          ))}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td>Total des dépenses mensuelles par catégorie(€)</td>
+            <td></td>
+            <td>
+              {Object.keys(categoryTotal).map((category, index) => (
+                <div key={index}>{category}: {categoryTotal[category]}</div>
+              ))}
+            </td>
+          </tr>
+          <tr>
+            <td>Total des dépenses(€)</td>
+            <td></td>
+            <td>{totalExpenses}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  );
 }
-export default DisplayTable
+
+export default DisplayTable;
